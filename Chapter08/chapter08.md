@@ -151,6 +151,303 @@ int main(void) {
 
 
 ```
+#include "stdio.h"
 
+//修改程序清单8.4的猜数字程序，使用更智能的猜测策略。例如，程序最初猜50，询问用户是猜大了、猜小了还是猜对了。如果猜小了，
+// 那么下一次猜测的值应是50和100中值，也就是75。如果这次猜大了，那么下一次猜测的值应是50和75的中值，等等。
+// 使用二分查找(binary search)策略，如果用户没有欺骗程序，那么程序很快就会猜到正确的答案。
+
+
+int main(void) {
+    int head = 1;
+    int tail = 100;
+    int guess = (head + tail) / 2;
+    char ch;
+
+    printf("Pick an integer from 1 to 100. I will try to guess ");
+    printf("it.\nrespond with a y if my guess is right and with");
+    printf("\nan n if it is wrong.\n");
+    do {
+        printf("Uh...is your number %d?\n", guess);
+        if (getchar() == 'y') {
+            break;
+        }
+        printf("Well, then, %d is larger or smaller than yours? (l or s):", guess);
+        while ((ch = getchar) == '\n') {
+            continue;
+        }
+        if (ch == 'l' || ch == 'L') {
+            tail = guess - 1;
+            guess = (head + tail) / 2;
+            continue;
+        } else if (ch == 's' || ch == 'S') {
+            head = guess + 1;
+            guess = (head + tail) / 2;
+            continue;
+        } else {
+            continue;
+        }
+    } while (getchar != 'y');
+
+    printf("I knew I could do it!\n");
+
+    return 0;
+}
 ```
 
+修改程序清单8.8中的get first ( )函数，让该函数返回读取的第1个非空白字符，并在一个简单的程序中测试。
+
+```
+#include "stdio.h"
+
+char get_first(void);
+
+int main(void) {
+    char ch;
+    ch = get_first();
+    printf("%c\n", ch);
+
+    return 0;
+}
+
+char get_first(void) {
+    char ch;
+
+    do {
+        ch = getchar();
+    } while (ch == ' ' || ch == '\n' || ch == '\t');
+    return ch;
+}
+```
+
+7．修改第7章的编程练习8，用字符代替数字标记菜单的选项。用q代替5作为结束输入的标记。
+
+```
+#include "stdio.h"
+#include <stdbool.h>
+
+void show_salary(int time_salary);
+
+#define salary_time_1 8.75
+#define salary_time_2 9.33
+#define salary_time_3 10.00
+#define salary_time_4 11.20
+#define MAGNIFICATION 1.5           // 倍率
+#define WEEK_TIME 40            // 每周基础工作时长
+#define TAX_RATE_BASIC 0.15         // 交税第一档次税率
+#define TAX_RATE_SECOND 0.20         // 交税第二档次税率
+#define TAX_RATE_THIRD 0.25         // 交税第三档次税率
+#define TAX_RATE_PHASE_1 300        // 薪水第一档次临界点
+#define TAX_RATE_PHASE_2 150        // 薪水第二档次临界点
+#define SALARY_TAX_RATE_PHASE_1 TAX_RATE_PHASE_1 * TAX_RATE_BASIC           // 满额第一薪水应缴税收
+#define SALARY_TAX_RATE_PHASE_2 SALARY_TAX_RATE_PHASE_1 + TAX_RATE_PHASE_2 * TAX_RATE_SECOND    // 满额第二薪水应缴税收
+
+int main(void) {
+
+    int time = 0, number = 1;
+    bool flag = 0;
+    float time_salary = 10.00;
+
+    printf("Enter the number corresponding to the desired pay rate or action:");
+    printf("a) $8.75/hr   \n"
+           "b)$9.33/hr   \n"
+           "c)$10.00 /hr   \n"
+           "d)$11.20 /hr  \n"
+           "q）quit\n");
+
+    while ((flag == 0 && scanf("%d", &number) == 1)) {
+
+        switch (number) {
+            case 'a':
+            case 'A': {
+                time_salary = salary_time_1;
+                show_salary(time_salary);
+                flag = 1;
+                break;
+            }
+            case 'b':
+            case 'B': {
+                time_salary = salary_time_2;
+                show_salary(time_salary);
+                flag = 1;
+                break;
+            }
+            case 'c':
+            case 'C': {
+                time_salary = salary_time_3;
+                show_salary(time_salary);
+                flag = 1;
+                break;
+            }
+            case 'd':
+            case 'D': {
+                time_salary = salary_time_4;
+                show_salary(time_salary);
+                flag = 1;
+                break;
+            }
+            case 'q': {
+                printf("quit\n");
+                break;
+            }
+            default: {
+                printf("Please enter correct letter:");
+                break;
+            }
+        }
+
+    }
+
+    printf("Down\n");
+
+
+    return 0;
+}
+
+void show_salary(int time_salary) {
+    int time;
+    float salary = 0.0, tax_revenue = 0.0, total_revenue = 0.0;
+
+    printf("Please input time:\n");
+    while (scanf("%d", &time) == 1) {
+
+        if (time <= WEEK_TIME && time >= 0) {
+            salary = time * time_salary;           // 计算基础周工作时长的薪资
+        } else if (time > WEEK_TIME) {
+            salary = WEEK_TIME * time_salary +
+                     (time - WEEK_TIME) * time_salary * MAGNIFICATION;         // 计算超过基础周工作时长的薪资
+        } else {
+            printf("Please input less than 0 or error");
+        }
+
+        if (salary <= TAX_RATE_PHASE_1) {
+            tax_revenue = salary * TAX_RATE_BASIC;      // 计算低于第一档次薪水临界点的应缴纳税额
+        } else if (salary > TAX_RATE_PHASE_1 && salary <= (TAX_RATE_PHASE_1 + TAX_RATE_PHASE_2)) {
+            tax_revenue = SALARY_TAX_RATE_PHASE_1 +
+                          (salary - TAX_RATE_PHASE_1) * TAX_RATE_SECOND;          // 计算低于第二档次薪水临界点的应缴纳税额
+        } else {
+            tax_revenue = SALARY_TAX_RATE_PHASE_2 + (salary - TAX_RATE_PHASE_1 - TAX_RATE_PHASE_2) *
+                                                    TAX_RATE_THIRD;            // 计算低于第三档次薪水临界点的应缴纳税额
+        }
+    }
+
+
+    total_revenue = salary - tax_revenue;       // 实收 = 应收 - 税收
+    printf("Salary is %.2lf, tax revenue is %.2lf, total revenue is %.2lf\n", salary, tax_revenue,
+           total_revenue);
+}
+```
+
+8．编写一个程序，显示一个提供加法、减法、乘法、除法的菜单。获得用户选择的选项后，程序提示用户输入两个数字,然后执行用户刚才选择的操作。该程序只接受菜单提供的选项。程序使用float类型的变量储存用户输入的数字，如果用户输入失败，则允许再次输入。进行除法运算时，如果用户输入О作为第2个数（除数)，程序应提示用户重新输入一个新值。该程序的一个运行示例如下:  
+Enter the operation of your choice:  
+a. add&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s. subtract   
+m. multiply&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d. divide   
+q. quit   
+a   
+Enter first number: 22 .4   
+Enter second number: one   
+one is not an number.   
+Please enter a number,such as 2.5，-1.78E8, or 3: 1   
+22.4 + 1 =23.4   
+Enter the operation of your choice:  
+a. add&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s. subtract  
+m. multiply&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d. divide  
+q. quit   
+d   
+Enter first number : 18. 4   
+Enter second number: 0   
+Enter a number other than 0: 0.2   
+18.4 / 0.2 = 92   
+Enter the operation of your choice :  
+a. add&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s. subtract   
+m. multiply&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d. divide  
+q. quit   
+q   
+Bye!
+
+```
+#include "stdio.h"
+
+void show_menu(void);
+
+float get_number(void);
+
+int main(void) {
+    char operate;
+    float first, second;
+
+    do {
+        show_menu();
+        operate = getchar();
+        while (getchar() != '\n') {
+//            printf(putchar(operate));
+            continue;
+        }
+
+        switch (operate) {
+            case 'a':
+                printf("Enter first number: ");
+                first = get_number();
+                printf("Enter second number: ");
+                second = get_number();
+                printf("%g + %g = %g \n", first, second, first + second);
+                break;
+            case 's':
+                printf("Enter first number: ");
+                first = get_number();
+                printf("Enter second number: ");
+                second = get_number();
+                printf("%g - %g = %g \n", first, second, first - second);
+                break;
+            case 'm':
+                printf("Enter first number: ");
+                first = get_number();
+                printf("Enter second number: ");
+                second = get_number();
+                printf("%g * %g = %g \n", first, second, first * second);
+                break;
+            case 'd':
+                printf("Enter first number: ");
+                first = get_number();
+                printf("Enter second number: ");
+                while ((second = get_number()) == 0) {
+                    printf("Enter a number other than 0: ");
+                }
+                printf("%g / %g = %g \n", first, second, first / second);
+                break;
+            case 'q':
+                break;
+            default:
+                printf("Please enter a char, such as a, s, m, d and q: \n");
+                while (getchar() != '\n');
+//                printf(putchar(operate));
+                break;
+        }
+        while (getchar() != '\n');
+//            printf(putchar(operate));
+//        }
+    } while (operate != 'q');
+    printf("Bye!\n");
+    return 0;
+}
+
+void show_menu(void) {
+    printf("Enter the operation of your choice: \n");
+    printf("a. add                                 s. subtract\n");
+    printf("m. multiply                            d. divide\n");
+    printf("q. quit\n");
+}
+
+float get_number(void) {
+    float f;
+    char c;
+    while (scanf("%g", &f) != 1) {
+        while ((c = getchar()) != '\n') {
+            putchar(c);
+        }
+        printf(" is not a number.\n");
+        printf("Please enter a number, such as 2.5, -1, 78E8,or 3: ");
+    }
+    return f;
+}
+```
